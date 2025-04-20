@@ -1,0 +1,131 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id Int @id @default(autoincrement())
+
+    username String
+    email    String  @unique
+    phone    String? @unique
+    password String
+    role     Role    @default(USER)
+
+    animals Animal[]
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
+
+model Animal {
+    id Int @id @default(autoincrement())
+
+    title       String
+    description String
+    gender      Gender
+    age         Int
+    price       Float
+    color       String
+    size        Size
+    location    String?
+    status      AnimalStatus @default(AVAILABLE)
+
+    petImages      PetImage[]
+    customerImages CustomerImage[]
+
+    userId Int
+    user   User @relation(fields: [userId], references: [id])
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
+
+model PetImage {
+    id Int @id @default(autoincrement())
+
+    url    String
+    isMain Boolean @default(false)
+
+    animalId Int
+    animal   Animal @relation(fields: [animalId], references: [id])
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
+
+model CustomerImage {
+    id Int @id @default(autoincrement())
+
+    url String
+
+    animalId Int
+    animal   Animal @relation(fields: [animalId], references: [id])
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
+
+model Product {
+    id Int @id @default(autoincrement())
+
+    title String
+    size  Float
+    type  ProductType
+    price Float
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
+
+model Notice {
+    id Int @id @default(autoincrement())
+
+    title String
+    type  NoticeType
+    text  String     @db.Text
+
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+}
+
+enum Role {
+    ADMIN
+    USER
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}
+
+enum Size {
+    SMALL
+    MEDIUM
+    BIG
+}
+
+enum ProductType {
+    DOG_FOOD
+    CAT_FOOD
+    COSTUME
+    TOY
+}
+
+enum NoticeType {
+    PET_KNOWLEDGE
+    PET_ADOPTION
+    PET_TRAINING
+    PET_HEALTH
+}
+
+enum AnimalStatus {
+    ADOPTED
+    AVAILABLE
+    PENDING
+    INACTIVE
+}
