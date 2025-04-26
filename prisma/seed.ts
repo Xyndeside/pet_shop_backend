@@ -8,16 +8,17 @@ import {
 	NoticeType,
 	AnimalStatus,
 } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-	await prisma.petImage.deleteMany();
-	await prisma.customerImage.deleteMany();
-	await prisma.animal.deleteMany();
-	await prisma.product.deleteMany();
-	await prisma.notice.deleteMany();
-	await prisma.user.deleteMany();
+	await prisma.$executeRawUnsafe(`TRUNCATE TABLE "PetImage" RESTART IDENTITY CASCADE`);
+	await prisma.$executeRawUnsafe(`TRUNCATE TABLE "CustomerImage" RESTART IDENTITY CASCADE`);
+	await prisma.$executeRawUnsafe(`TRUNCATE TABLE "Animal" RESTART IDENTITY CASCADE`);
+	await prisma.$executeRawUnsafe(`TRUNCATE TABLE "Product" RESTART IDENTITY CASCADE`);
+	await prisma.$executeRawUnsafe(`TRUNCATE TABLE "Notice" RESTART IDENTITY CASCADE`);
+	await prisma.$executeRawUnsafe(`TRUNCATE TABLE "User" RESTART IDENTITY CASCADE`);
 
 	// Create users
 	await prisma.user.create({
@@ -25,7 +26,7 @@ async function main() {
 			username: 'admin',
 			email: 'admin@example.com',
 			phone: '1234567890',
-			password: 'admin',
+			password: await bcrypt.hash('admin', 5),
 			role: Role.ADMIN,
 		},
 	});
@@ -35,7 +36,7 @@ async function main() {
 			username: 'userTest',
 			email: 'userTest@example.com',
 			phone: '0987654321',
-			password: '123456',
+			password: await bcrypt.hash('123456', 5),
 		},
 	});
 
