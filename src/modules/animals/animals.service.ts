@@ -89,6 +89,23 @@ export class AnimalsService {
 		return animal;
 	}
 
+	async findMyAnimals(userId: number): Promise<AnimalFullDto[]> {
+		const animals = await this.prisma.animal.findMany({
+			where: {
+				userId,
+			},
+			include: {
+				petImages: true,
+				customerImages: true,
+			},
+		});
+		if (!animals || animals.length === 0) {
+			throw new NotFoundException('No animals found');
+		}
+
+		return animals;
+	}
+
 	async create(animalData: CreateAnimalDto, userId: number) {
 		const animal = await this.prisma.animal.create({
 			data: {
@@ -116,9 +133,7 @@ export class AnimalsService {
 			throw new NotFoundException(`Animal not found`);
 		}
 
-		if (animal.userId !== requestUser.id && requestUser.role !== Role.ADMIN) {
-			throw new ForbiddenException('You dont have permission to perform this action');
-		}
+		this.checkUserPermission(animal.userId, requestUser);
 
 		return this.prisma.animal.update({
 			where: { id },
@@ -134,9 +149,7 @@ export class AnimalsService {
 			throw new NotFoundException(`Animal not found`);
 		}
 
-		if (animal.userId !== requestUser.id && requestUser.role !== Role.ADMIN) {
-			throw new ForbiddenException('You dont have permission to perform this action');
-		}
+		this.checkUserPermission(animal.userId, requestUser);
 
 		await this.prisma.$transaction([
 			this.prisma.petImage.deleteMany({
@@ -151,5 +164,11 @@ export class AnimalsService {
 		]);
 
 		return { message: 'Animal deleted successfully' };
+	}
+
+	private checkUserPermission(animalUserId: number, requestUser: JwtPayload) {
+		if (animalUserId !== requestUser.id && requestUser.role !== Role.ADMIN) {
+			throw new ForbiddenException('You dont have permission to perform this action');
+		}
 	}
 }
