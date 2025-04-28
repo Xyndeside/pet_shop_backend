@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { UserResponseDto } from './dto/user-response.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,8 +20,6 @@ export class UsersService {
 		});
 
 		return {
-			statusCode: HttpStatus.CREATED,
-			message: 'User created successfully',
 			userId: user.id,
 		};
 	}
